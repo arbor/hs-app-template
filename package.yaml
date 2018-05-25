@@ -78,8 +78,11 @@ library:
   - App.AppError
   - App.AppState
   - App.Application
+  - App.Has
   - App.Kafka
+  - App.Lens
   - App.Options
+  - App.Options.Types
   - App.Orphans
   - App.Service
   dependencies:
