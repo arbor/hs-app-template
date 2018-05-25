@@ -23,12 +23,12 @@ main :: IO ()
 main = do
   opt <- parseOptions
   progName <- T.pack <$> getProgName
-  let logLvk  = opt ^. optLogLevel
-  let statsConf = opt ^. optStatsConfig
+  let logLvk  = opt ^. optionsLogLevel
+  let statsConf = opt ^. optionsStatsConfig
 
   withStdOutTimedFastLogger $ \lgr -> do
     withStatsClient progName statsConf $ \stats -> do
-      envAws <- mkEnv (opt ^. optRegion) logLvk lgr
+      envAws <- mkEnv (opt ^. optionsRegion) logLvk lgr
       let envApp = AppEnv opt envAws stats (AppLogger lgr logLvk)
       res <- runApplication envApp
       case res of
@@ -44,19 +44,19 @@ runApplication envApp =
     kafkaConf <- view kafkaConfig
 
     logInfo "Creating Kafka Consumer"
-    consumer <- mkConsumer (opt ^. consumerGroupId) (opt ^. optInputTopic)
+    consumer <- mkConsumer (opt ^. optionsConsumerGroupId) (opt ^. optionsInputTopic)
     -- producer <- mkProducer -- Use this if you also want a producer.
 
     logInfo "Instantiating Schema Registry"
-    sr <- schemaRegistry (kafkaConf ^. schemaRegistryAddress)
+    sr <- schemaRegistry (kafkaConf ^. kafkaConfigSchemaRegistryAddress)
 
     logInfo "Running Kafka Consumer"
     runConduit $
-      kafkaSourceNoClose consumer (kafkaConf ^. pollTimeoutMs)
-      .| throwLeftSatisfyC KafkaErr isFatal            -- throw any fatal error
-      .| skipNonFatalExcept [isPollTimeout]            -- discard any non-fatal except poll timeouts
-      .| rightC (Srv.handleStream sr)                  -- handle messages (see Service.hs)
-      .| everyNSeconds (kafkaConf ^. commitPeriodSec)  -- only commit ever N seconds, so we don't hammer Kafka.
+      kafkaSourceNoClose consumer (kafkaConf ^. kafkaConfigPollTimeoutMs)
+      .| throwLeftSatisfyC KafkaErr isFatal                       -- throw any fatal error
+      .| skipNonFatalExcept [isPollTimeout]                       -- discard any non-fatal except poll timeouts
+      .| rightC (Srv.handleStream sr)                             -- handle messages (see Service.hs)
+      .| everyNSeconds (kafkaConf ^. kafkaConfigCommitPeriodSec)  -- only commit ever N seconds, so we don't hammer Kafka.
       .| commitOffsetsSink consumer
       -- .| flushThenCommitSink consumer producer -- Swap with the above if you want a producer.
 
@@ -77,14 +77,13 @@ throwLeftSatisfyC f p = awaitForever $ \msg ->
 withStatsClient :: AppName -> StatsConfig -> (StatsClient -> IO a) -> IO a
 withStatsClient appName statsConf f = do
   globalTags <- mkStatsTags statsConf
-  let statsOpts = DogStatsSettings (statsConf ^. statsHost) (statsConf ^. statsPort)
+  let statsOpts = DogStatsSettings (statsConf ^. statsConfigHost) (statsConf ^. statsConfigPort)
   bracket (createStatsClient statsOpts (MetricName appName) globalTags) closeStatsClient f
 
 mkStatsTags :: StatsConfig -> IO [Tag]
 mkStatsTags statsConf = do
   deplId <- envTag "TASK_DEPLOY_ID" "deploy_id"
   let envTags = catMaybes [deplId]
-  return $ envTags <> (statsConf ^. statsTags <&> toTag)
+  return $ envTags <> (statsConf ^. statsConfigTags <&> toTag)
   where
     toTag (StatsTag (k, v)) = S.tag k v
-

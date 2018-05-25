@@ -32,13 +32,13 @@ mkConsumer cgid topic = do
   conf <- view kafkaConfig
   logs <- view appLogger
   let props = fold
-        [ KSrc.brokersList [conf ^. broker]
+        [ KSrc.brokersList [conf ^. kafkaConfigBroker]
         , cgid & groupId
-        , conf ^. queuedMaxMsgKBytes & queuedMaxMessagesKBytes
+        , conf ^. kafkaConfigQueuedMaxMsgKBytes & queuedMaxMessagesKBytes
         , noAutoCommit
         , KSrc.suppressDisconnectLogs
         , KSrc.logLevel (kafkaLogLevel (logs ^. appLoggerLogLevel))
-        , KSrc.debugOptions (kafkaDebugEnable (conf ^. debugOpts))
+        , KSrc.debugOptions (kafkaDebugEnable (conf ^. kafkaConfigDebugOpts))
         , KSrc.setCallback (logCallback   (\l s1 s2 -> pushLogMessage (logs ^. appLoggerLogger) (kafkaLogLevelToLogLevel $ toEnum l) ("[" <> s1 <> "] " <> s2)))
         , KSrc.setCallback (errorCallback (\e s -> pushLogMessage (logs ^. appLoggerLogger) LevelError ("[" <> show e <> "] " <> s)))
         ]
@@ -50,7 +50,7 @@ mkProducer :: (MonadResource m, MonadReader r m, HasKafkaConfig r, HasAppLogger 
 mkProducer = do
   conf <- view kafkaConfig
   logs <- view appLogger
-  let props = KSnk.brokersList [conf ^. broker]
+  let props = KSnk.brokersList [conf ^. kafkaConfigBroker]
            <> KSnk.suppressDisconnectLogs
            <> KSnk.sendTimeout (Timeout 0) -- message sending timeout, 0 means "no timeout"
            <> KSnk.logLevel (kafkaLogLevel (logs ^. appLoggerLogLevel))
