@@ -4,18 +4,17 @@
 
 module App.AppEnv where
 
-import App.Options.Types
-import Arbor.Logger      (LogLevel, TimedFastLogger)
-import Network.AWS       (Env)
-import Network.StatsD    (StatsClient)
+import Arbor.Logger   (LogLevel, TimedFastLogger)
+import Network.AWS    (Env)
+import Network.StatsD (StatsClient)
 
 data AppLogger = AppLogger
   { _appLoggerLogger   :: TimedFastLogger
   , _appLoggerLogLevel :: LogLevel
   }
 
-data AppEnv = AppEnv
-  { _appEnvOptions     :: Options
+data AppEnv o = AppEnv
+  { _appEnvOptions     :: o
   , _appEnvAwsEnv      :: Env
   , _appEnvStatsClient :: StatsClient
   , _appEnvLogger      :: AppLogger

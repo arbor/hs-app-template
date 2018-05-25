@@ -14,7 +14,7 @@ import qualified Data.Conduit.List as L
 -- | Handles the stream of incoming messages.
 -- Change the return type to anything.
 -- Emit values downstream because offsets are committed based on their present.
-handleStream :: MonadApp m
+handleStream :: MonadApp o m
              => SchemaRegistry
              -> Conduit (ConsumerRecord (Maybe ByteString) (Maybe ByteString)) m ()
 handleStream sr =

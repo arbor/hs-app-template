@@ -1,4 +1,5 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE TemplateHaskell        #-}
 {-# OPTIONS_GHC -Wno-orphans #-}
 
 module App.Has where
@@ -21,7 +22,7 @@ instance HasKafkaConfig Options where
 instance HasStatsConfig Options where
   statsConfig = optionsStatsConfig
 
-instance HasEnv AppEnv where
+instance HasEnv (AppEnv o) where
   environment = appEnv . appEnvAwsEnv
 
 class HasStatsClient a where
@@ -30,14 +31,14 @@ class HasStatsClient a where
 instance HasStatsClient StatsClient where
   statsClient = id
 
-instance HasStatsClient AppEnv where
+instance HasStatsClient (AppEnv o) where
   statsClient = appEnvStatsClient
 
-instance HasAppLogger AppEnv where
+instance HasAppLogger (AppEnv o) where
   appLogger = appEnv . appLogger
 
-instance HasKafkaConfig AppEnv where
+instance HasKafkaConfig o => HasKafkaConfig (AppEnv o) where
   kafkaConfig = appEnvOptions . kafkaConfig
 
-instance HasStatsConfig AppEnv where
+instance HasStatsConfig o => HasStatsConfig (AppEnv o) where
   statsConfig = appEnvOptions . statsConfig
