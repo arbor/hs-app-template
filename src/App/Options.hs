@@ -75,8 +75,8 @@ kafkaConfigParser = KafkaConfig
     <> help "Kafka consumer offsets commit period (in seconds)"
     )
 
-optParser :: Parser Options
-optParser = Options
+optParser :: Parser CmdServiceOptions
+optParser = CmdServiceOptions
   <$> readOptionMsg "Valid values are LevelDebug, LevelInfo, LevelWarn, LevelError"
         (  long "log-level"
         <> metavar "LOG_LEVEL"
@@ -99,7 +99,7 @@ optParser = Options
   <*> kafkaConfigParser
   <*> statsConfigParser
 
-awsLogLevel :: Options -> AWS.LogLevel
+awsLogLevel :: CmdServiceOptions -> AWS.LogLevel
 awsLogLevel o = case o ^. L.logLevel of
   LevelError -> AWS.Error
   LevelWarn  -> AWS.Error
@@ -124,12 +124,12 @@ string2Tags s = StatsTag . splitTag <$> splitTags
     splitTags = T.split (==',') (T.pack s)
     splitTag t = T.drop 1 <$> T.break (==':') t
 
-optParserInfo :: ParserInfo Options
+optParserInfo :: ParserInfo CmdServiceOptions
 optParserInfo = info (helper <*> optParser)
   (  fullDesc
   <> progDesc "Template for Haskell projects with built-in support for Kafka and AWS"
   <> header "Haskell App Template"
   )
 
-parseOptions :: IO Options
+parseOptions :: IO CmdServiceOptions
 parseOptions = execParser optParserInfo

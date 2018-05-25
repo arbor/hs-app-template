@@ -9,6 +9,6 @@ import Control.Lens
 
 makeFields ''AppEnv
 makeFields ''AppLogger
+makeFields ''CmdServiceOptions
 makeFields ''KafkaConfig
-makeFields ''Options
 makeFields ''StatsConfig
