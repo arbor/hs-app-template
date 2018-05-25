@@ -11,7 +11,7 @@ echo "Running: $exe"
 stack build
 path=$(stack path --local-install-root)
 
-${path}/bin/${exe} \
+${path}/bin/${exe} service \
   --kafka-broker ${KAFKA_HOST}:9092 \
   --kafka-group-id ${CLUB_NAME}--hs-app-template-${USER} \
   --kafka-schema-registry http://${KAFKA_HOST}:8081 \

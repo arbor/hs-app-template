@@ -5,13 +5,15 @@
 module App.Has where
 
 import App.AppEnv
+import App.Commands.Types
 import App.Options.Types
 import Control.Lens
-import Network.AWS       (HasEnv (..))
-import Network.StatsD    (StatsClient)
+import Network.AWS        (HasEnv (..))
+import Network.StatsD     (StatsClient)
 
 makeClassy ''AppEnv
 makeClassy ''AppLogger
+makeClassy ''CmdDevRunOptions
 makeClassy ''CmdServiceOptions
 makeClassy ''KafkaConfig
 makeClassy ''StatsConfig

@@ -1,12 +1,9 @@
 module App.Options.Types where
 
-import Control.Monad.Logger (LogLevel (..))
-import Data.Text            (Text)
-import Kafka.Consumer.Types
+import Data.Text      (Text)
 import Kafka.Types
-import Network.AWS.S3.Types (Region (..))
-import Network.Socket       (HostName)
-import Network.StatsD       (SampleRate (..))
+import Network.Socket (HostName)
+import Network.StatsD (SampleRate (..))
 
 newtype StatsTag = StatsTag (Text, Text) deriving (Show, Eq)
 
@@ -24,13 +21,4 @@ data StatsConfig = StatsConfig
   , _statsConfigPort       :: Int
   , _statsConfigTags       :: [StatsTag]
   , _statsConfigSampleRate :: SampleRate
-  } deriving (Show)
-
-data CmdServiceOptions = CmdServiceOptions
-  { _cmdServiceOptionsLogLevel        :: LogLevel
-  , _cmdServiceOptionsRegion          :: Region
-  , _cmdServiceOptionsInputTopic      :: TopicName
-  , _cmdServiceOptionsConsumerGroupId :: ConsumerGroupId
-  , _cmdServiceOptionsKafkaConfig     :: KafkaConfig
-  , _cmdServiceOptionsStatsConfig     :: StatsConfig
   } deriving (Show)
