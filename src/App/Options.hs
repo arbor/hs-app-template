@@ -20,28 +20,28 @@ import qualified Network.AWS as AWS
 newtype StatsTag = StatsTag (Text, Text) deriving (Show, Eq)
 
 data KafkaConfig = KafkaConfig
-  { _broker                :: BrokerAddress
-  , _schemaRegistryAddress :: String
-  , _pollTimeoutMs         :: Timeout
-  , _queuedMaxMsgKBytes    :: Int
-  , _debugOpts             :: String
-  , _commitPeriodSec       :: Int
+  { _kafkaConfigBroker                :: BrokerAddress
+  , _kafkaConfigSchemaRegistryAddress :: String
+  , _kafkaConfigPollTimeoutMs         :: Timeout
+  , _kafkaConfigQueuedMaxMsgKBytes    :: Int
+  , _kafkaConfigDebugOpts             :: String
+  , _kafkaConfigCommitPeriodSec       :: Int
   } deriving (Show)
 
 data StatsConfig = StatsConfig
-  { _statsHost       :: HostName
-  , _statsPort       :: Int
-  , _statsTags       :: [StatsTag]
-  , _statsSampleRate :: SampleRate
+  { _statsConfigHost       :: HostName
+  , _statsConfigPort       :: Int
+  , _statsConfigTags       :: [StatsTag]
+  , _statsConfigSampleRate :: SampleRate
   } deriving (Show)
 
 data Options = Options
-  { _optLogLevel     :: LogLevel
-  , _optRegion       :: Region
-  , _optInputTopic   :: TopicName
-  , _consumerGroupId :: ConsumerGroupId
-  , _optKafkaConfig  :: KafkaConfig
-  , _optStatsConfig  :: StatsConfig
+  { _optionsLogLevel        :: LogLevel
+  , _optionsRegion          :: Region
+  , _optionsInputTopic      :: TopicName
+  , _optionsConsumerGroupId :: ConsumerGroupId
+  , _optionsKafkaConfig     :: KafkaConfig
+  , _optionsStatsConfig     :: StatsConfig
   } deriving (Show)
 
 makeClassy ''KafkaConfig
@@ -49,10 +49,10 @@ makeClassy ''StatsConfig
 makeClassy ''Options
 
 instance HasKafkaConfig Options where
-  kafkaConfig = optKafkaConfig
+  kafkaConfig = optionsKafkaConfig
 
 instance HasStatsConfig Options where
-  statsConfig = optStatsConfig
+  statsConfig = optionsStatsConfig
 
 statsConfigParser :: Parser StatsConfig
 statsConfigParser = StatsConfig
@@ -137,7 +137,7 @@ optParser = Options
   <*> statsConfigParser
 
 awsLogLevel :: Options -> AWS.LogLevel
-awsLogLevel o = case o ^. optLogLevel of
+awsLogLevel o = case o ^. optionsLogLevel of
   LevelError -> AWS.Error
   LevelWarn  -> AWS.Error
   LevelInfo  -> AWS.Error
