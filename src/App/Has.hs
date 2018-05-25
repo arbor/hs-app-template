@@ -5,23 +5,9 @@ module App.Has where
 
 import App.AppEnv
 import App.Options.Types
-import Arbor.Logger          (LogLevel, TimedFastLogger)
 import Control.Lens
-import Control.Monad.Logger  (LogLevel (..))
-import Data.Semigroup        ((<>))
-import Data.Text             (Text)
-import Kafka.Consumer.Types
-import Kafka.Types
-import Network.AWS           (Env, HasEnv (..))
-import Network.AWS.Data.Text (FromText (..), fromText)
-import Network.AWS.S3.Types  (Region (..))
-import Network.Socket        (HostName)
-import Network.StatsD        (SampleRate (..), StatsClient)
-import Options.Applicative
-import Text.Read             (readEither)
-
-import qualified Data.Text   as T
-import qualified Network.AWS as AWS
+import Network.AWS       (HasEnv (..))
+import Network.StatsD    (StatsClient)
 
 makeClassy ''AppEnv
 makeClassy ''AppLogger
@@ -55,5 +41,3 @@ instance HasKafkaConfig AppEnv where
 
 instance HasStatsConfig AppEnv where
   statsConfig = appEnvOptions . statsConfig
-
-
