@@ -60,18 +60,17 @@ deriving instance MonadAppError Application
 deriving instance MonadApp Application
 
 instance MonadStats Application where
-  getStatsClient = reader _appStatsClient
+  getStatsClient = reader _appEnvStatsClient
 
 runApplicationM :: AppEnv
                 -> Application ()
                 -> IO (Either AppError AppState)
 runApplicationM envApp f =
   runResourceT
-    . runAWS (envApp ^. appAwsEnv)
-    . runTimedLogT (envApp ^. appLogger . lgLogLevel) (envApp ^. appLogger . lgLogger)
+    . runAWS (envApp ^. appEnvAwsEnv)
+    . runTimedLogT (envApp ^. appLogger . appLoggerLogLevel) (envApp ^. appLogger . appLoggerLogger)
     . runExceptT
     . flip execStateT appStateEmpty
     $ do
-        logInfo $ show (envApp ^. appOptions)
+        logInfo $ show (envApp ^. appEnvOptions)
         runReaderT (unApp f) envApp
-

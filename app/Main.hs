@@ -29,7 +29,7 @@ main = do
   withStdOutTimedFastLogger $ \lgr -> do
     withStatsClient progName statsConf $ \stats -> do
       envAws <- mkEnv (opt ^. optRegion) logLvk lgr
-      let envApp = AppEnv opt envAws stats (Logger lgr logLvk)
+      let envApp = AppEnv opt envAws stats (AppLogger lgr logLvk)
       res <- runApplication envApp
       case res of
         Left err -> pushLogMessage lgr LevelError ("Exiting: " <> show err)
@@ -40,7 +40,7 @@ main = do
 runApplication :: AppEnv -> IO (Either AppError AppState)
 runApplication envApp =
   runApplicationM envApp $ do
-    opt <- view appOptions
+    opt <- view appEnvOptions
     kafkaConf <- view kafkaConfig
 
     logInfo "Creating Kafka Consumer"

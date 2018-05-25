@@ -10,23 +10,23 @@ import Control.Lens
 import Network.AWS    (Env, HasEnv (..))
 import Network.StatsD (StatsClient)
 
-data Logger = Logger
-  { _lgLogger   :: TimedFastLogger
-  , _lgLogLevel :: LogLevel
+data AppLogger = AppLogger
+  { _appLoggerLogger   :: TimedFastLogger
+  , _appLoggerLogLevel :: LogLevel
   }
 
 data AppEnv = AppEnv
-  { _appOptions     :: Options
-  , _appAwsEnv      :: Env
-  , _appStatsClient :: StatsClient
-  , _appLogger      :: Logger
+  { _appEnvOptions     :: Options
+  , _appEnvAwsEnv      :: Env
+  , _appEnvStatsClient :: StatsClient
+  , _appEnvLogger      :: AppLogger
   }
 
-makeClassy ''Logger
+makeClassy ''AppLogger
 makeClassy ''AppEnv
 
 instance HasEnv AppEnv where
-  environment = appEnv . appAwsEnv
+  environment = appEnv . appEnvAwsEnv
 
 class HasStatsClient a where
   statsClient :: Lens' a StatsClient
@@ -35,14 +35,14 @@ instance HasStatsClient StatsClient where
   statsClient = id
 
 instance HasStatsClient AppEnv where
-  statsClient = appStatsClient
+  statsClient = appEnvStatsClient
 
-instance HasLogger AppEnv where
-  logger = appEnv . appLogger
+instance HasAppLogger AppEnv where
+  appLogger = appEnv . appLogger
 
 instance HasKafkaConfig AppEnv where
-  kafkaConfig = appOptions . kafkaConfig
+  kafkaConfig = appEnvOptions . kafkaConfig
 
 instance HasStatsConfig AppEnv where
-  statsConfig = appOptions . statsConfig
+  statsConfig = appEnvOptions . statsConfig
 
