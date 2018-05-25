@@ -40,7 +40,13 @@ main = do
     pushLogMessage lgr LevelError ("Premature exit, must not happen." :: String)
 
 
-runApplication :: AppEnv -> IO (Either AppError AppState)
+runApplication ::
+  ( H.HasKafkaConfig o
+  , L.HasConsumerGroupId o ConsumerGroupId
+  , L.HasInputTopic o TopicName
+  , Show o)
+  => AppEnv o
+  -> IO (Either AppError AppState)
 runApplication envApp =
   runApplicationM envApp $ do
     opt <- view H.appEnvOptions
