@@ -100,4 +100,3 @@ optsService = CmdServiceOptions
     <> help "Kafka consumer group id"))
   <*> kafkaConfigParser
   <*> statsConfigParser
-

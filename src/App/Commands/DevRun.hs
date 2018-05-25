@@ -2,8 +2,11 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
 
-module DevApp where
+module App.Commands.DevRun where
 
+import App.AWS.Env
+import App.Commands.Types
+import App.Orphans                  ()
 import Arbor.Logger
 import Control.Monad.Base
 import Control.Monad.Catch
@@ -12,9 +15,10 @@ import Control.Monad.Logger         (LoggingT, MonadLogger)
 import Control.Monad.Trans.Resource
 import Network.AWS                  as AWS hiding (LogLevel)
 import Network.StatsD               as S
+import Options.Applicative
 
-import App.AWS.Env
-import App.Orphans ()
+cmdDevRun :: Mod CommandFields (IO ())
+cmdDevRun = command "dev-run" $ flip info idm $ runDevRun <$> optsDevRun
 
 newtype DevApp a = DevApp
   { unDevApp :: (LoggingT AWS) a
@@ -24,11 +28,15 @@ newtype DevApp a = DevApp
 instance MonadStats DevApp where
   getStatsClient = pure Dummy
 
-runDevApp' :: HasEnv e => e -> TimedFastLogger -> DevApp a -> IO a
-runDevApp' e logger f = runResourceT . runAWS e $ runTimedLogT LevelInfo logger (unDevApp f)
-
-runDevApp :: DevApp a -> IO a
-runDevApp f =
+runDevRun :: CmdDevRunOptions -> IO ()
+runDevRun _ = do
   withStdOutTimedFastLogger $ \logger -> do
     env <- mkEnv Oregon LevelInfo logger
-    runDevApp' env logger f
+    runDevRun' env logger $ do
+      return ()
+
+runDevRun' :: HasEnv e => e -> TimedFastLogger -> DevApp a -> IO a
+runDevRun' e logger f = runResourceT . runAWS e $ runTimedLogT LevelInfo logger (unDevApp f)
+
+optsDevRun :: Parser CmdDevRunOptions
+optsDevRun = pure CmdDevRunOptions

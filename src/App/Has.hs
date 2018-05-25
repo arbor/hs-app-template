@@ -13,6 +13,7 @@ import Network.StatsD     (StatsClient)
 
 makeClassy ''AppEnv
 makeClassy ''AppLogger
+makeClassy ''CmdDevRunOptions
 makeClassy ''CmdServiceOptions
 makeClassy ''KafkaConfig
 makeClassy ''StatsConfig
