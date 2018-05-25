@@ -1,58 +1,21 @@
 {-# LANGUAGE TemplateHaskell #-}
 module App.Options where
 
+import App.Options.Types
 import Control.Lens
 import Control.Monad.Logger  (LogLevel (..))
 import Data.Semigroup        ((<>))
-import Data.Text             (Text)
 import Kafka.Consumer.Types
 import Kafka.Types
 import Network.AWS.Data.Text (FromText (..), fromText)
 import Network.AWS.S3.Types  (Region (..))
-import Network.Socket        (HostName)
 import Network.StatsD        (SampleRate (..))
 import Options.Applicative
 import Text.Read             (readEither)
 
+import qualified App.Lens    as L
 import qualified Data.Text   as T
 import qualified Network.AWS as AWS
-
-newtype StatsTag = StatsTag (Text, Text) deriving (Show, Eq)
-
-data KafkaConfig = KafkaConfig
-  { _kafkaConfigBroker                :: BrokerAddress
-  , _kafkaConfigSchemaRegistryAddress :: String
-  , _kafkaConfigPollTimeoutMs         :: Timeout
-  , _kafkaConfigQueuedMaxMsgKBytes    :: Int
-  , _kafkaConfigDebugOpts             :: String
-  , _kafkaConfigCommitPeriodSec       :: Int
-  } deriving (Show)
-
-data StatsConfig = StatsConfig
-  { _statsConfigHost       :: HostName
-  , _statsConfigPort       :: Int
-  , _statsConfigTags       :: [StatsTag]
-  , _statsConfigSampleRate :: SampleRate
-  } deriving (Show)
-
-data Options = Options
-  { _optionsLogLevel        :: LogLevel
-  , _optionsRegion          :: Region
-  , _optionsInputTopic      :: TopicName
-  , _optionsConsumerGroupId :: ConsumerGroupId
-  , _optionsKafkaConfig     :: KafkaConfig
-  , _optionsStatsConfig     :: StatsConfig
-  } deriving (Show)
-
-makeClassy ''KafkaConfig
-makeClassy ''StatsConfig
-makeClassy ''Options
-
-instance HasKafkaConfig Options where
-  kafkaConfig = optionsKafkaConfig
-
-instance HasStatsConfig Options where
-  statsConfig = optionsStatsConfig
 
 statsConfigParser :: Parser StatsConfig
 statsConfigParser = StatsConfig
@@ -137,7 +100,7 @@ optParser = Options
   <*> statsConfigParser
 
 awsLogLevel :: Options -> AWS.LogLevel
-awsLogLevel o = case o ^. optionsLogLevel of
+awsLogLevel o = case o ^. L.logLevel of
   LevelError -> AWS.Error
   LevelWarn  -> AWS.Error
   LevelInfo  -> AWS.Error

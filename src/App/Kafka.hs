@@ -6,8 +6,6 @@ module App.Kafka
   , mkProducer
   ) where
 
-import App.AppEnv
-import App.Options
 import Arbor.Logger
 import Control.Lens                 hiding (cons)
 import Control.Monad                (void)
@@ -20,43 +18,45 @@ import Data.Monoid                  ((<>))
 import Kafka.Conduit.Sink           as KSnk
 import Kafka.Conduit.Source         as KSrc
 
+import qualified App.Has  as H
+import qualified App.Lens as L
 import qualified Data.Map as M
 
 newtype ConsumerGroupSuffix = ConsumerGroupSuffix String deriving (Show, Eq)
 
-mkConsumer :: (MonadResource m, MonadReader r m, HasKafkaConfig r, HasAppLogger r)
+mkConsumer :: (MonadResource m, MonadReader r m, H.HasKafkaConfig r, H.HasAppLogger r)
             => ConsumerGroupId
             -> TopicName
             -> m KafkaConsumer
 mkConsumer cgid topic = do
-  conf <- view kafkaConfig
-  logs <- view appLogger
+  conf <- view H.kafkaConfig
+  logs <- view H.appLogger
   let props = fold
-        [ KSrc.brokersList [conf ^. kafkaConfigBroker]
+        [ KSrc.brokersList [conf ^. L.broker]
         , cgid & groupId
-        , conf ^. kafkaConfigQueuedMaxMsgKBytes & queuedMaxMessagesKBytes
+        , conf ^. L.queuedMaxMsgKBytes & queuedMaxMessagesKBytes
         , noAutoCommit
         , KSrc.suppressDisconnectLogs
-        , KSrc.logLevel (kafkaLogLevel (logs ^. appLoggerLogLevel))
-        , KSrc.debugOptions (kafkaDebugEnable (conf ^. kafkaConfigDebugOpts))
-        , KSrc.setCallback (logCallback   (\l s1 s2 -> pushLogMessage (logs ^. appLoggerLogger) (kafkaLogLevelToLogLevel $ toEnum l) ("[" <> s1 <> "] " <> s2)))
-        , KSrc.setCallback (errorCallback (\e s -> pushLogMessage (logs ^. appLoggerLogger) LevelError ("[" <> show e <> "] " <> s)))
+        , KSrc.logLevel (kafkaLogLevel (logs ^. L.logLevel))
+        , KSrc.debugOptions (kafkaDebugEnable (conf ^. L.debugOpts))
+        , KSrc.setCallback (logCallback   (\l s1 s2 -> pushLogMessage (logs ^. L.logger) (kafkaLogLevelToLogLevel $ toEnum l) ("[" <> s1 <> "] " <> s2)))
+        , KSrc.setCallback (errorCallback (\e s -> pushLogMessage (logs ^. L.logger) LevelError ("[" <> show e <> "] " <> s)))
         ]
       sub = topics [topic] <> offsetReset Earliest
       cons = newConsumer props sub >>= either throwM return
   snd <$> allocate cons (void . closeConsumer)
 
-mkProducer :: (MonadResource m, MonadReader r m, HasKafkaConfig r, HasAppLogger r) => m KafkaProducer
+mkProducer :: (MonadResource m, MonadReader r m, H.HasKafkaConfig r, H.HasAppLogger r) => m KafkaProducer
 mkProducer = do
-  conf <- view kafkaConfig
-  logs <- view appLogger
-  let props = KSnk.brokersList [conf ^. kafkaConfigBroker]
+  conf <- view H.kafkaConfig
+  logs <- view H.appLogger
+  let props = KSnk.brokersList [conf ^. L.broker]
            <> KSnk.suppressDisconnectLogs
            <> KSnk.sendTimeout (Timeout 0) -- message sending timeout, 0 means "no timeout"
-           <> KSnk.logLevel (kafkaLogLevel (logs ^. appLoggerLogLevel))
-           <> KSnk.setCallback (logCallback   (\l s1 s2 -> pushLogMessage (logs ^. appLoggerLogger) (kafkaLogLevelToLogLevel $ toEnum l) ("[" <> s1 <> "] " <> s2)))
-           <> KSnk.setCallback (errorCallback (\e s -> pushLogMessage (logs ^. appLoggerLogger) LevelError ("[" <> show e <> "] " <> s)))
-           <> KSnk.setCallback (deliveryErrorsCallback (logAndDieHard (logs ^. appLoggerLogger)))
+           <> KSnk.logLevel (kafkaLogLevel (logs ^. L.logLevel))
+           <> KSnk.setCallback (logCallback   (\l s1 s2 -> pushLogMessage (logs ^. L.logger) (kafkaLogLevelToLogLevel $ toEnum l) ("[" <> s1 <> "] " <> s2)))
+           <> KSnk.setCallback (errorCallback (\e s -> pushLogMessage (logs ^. L.logger) LevelError ("[" <> show e <> "] " <> s)))
+           <> KSnk.setCallback (deliveryErrorsCallback (logAndDieHard (logs ^. L.logger)))
            <> KSnk.extraProps (M.singleton "linger.ms"                 "100")
            <> KSnk.extraProps (M.singleton "message.send.max.retries"  "0"  )
            <> KSnk.compression Gzip

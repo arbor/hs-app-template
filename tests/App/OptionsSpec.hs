@@ -5,6 +5,7 @@ module App.OptionsSpec
   ) where
 
 import App.Options
+import App.Options.Types
 
 import Test.Hspec
 
