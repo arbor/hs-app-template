@@ -22,6 +22,8 @@ import Data.Text                    (Text)
 import Network.AWS                  as AWS hiding (LogLevel)
 import Network.StatsD               as S
 
+import qualified App.Lens as L
+
 type AppName = Text
 
 newtype Application a = Application
@@ -67,10 +69,10 @@ runApplicationM :: AppEnv
                 -> IO (Either AppError AppState)
 runApplicationM envApp f =
   runResourceT
-    . runAWS (envApp ^. appEnvAwsEnv)
-    . runTimedLogT (envApp ^. appLogger . appLoggerLogLevel) (envApp ^. appLogger . appLoggerLogger)
+    . runAWS (envApp ^. L.awsEnv)
+    . runTimedLogT (envApp ^. L.logger . L.logLevel) (envApp ^. L.logger . L.logger)
     . runExceptT
     . flip execStateT appStateEmpty
     $ do
-        logInfo $ show (envApp ^. appEnvOptions)
+        logInfo $ show (envApp ^. L.options)
         runReaderT (unApp f) envApp
