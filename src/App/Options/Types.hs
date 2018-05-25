@@ -26,11 +26,11 @@ data StatsConfig = StatsConfig
   , _statsConfigSampleRate :: SampleRate
   } deriving (Show)
 
-data Options = Options
-  { _optionsLogLevel        :: LogLevel
-  , _optionsRegion          :: Region
-  , _optionsInputTopic      :: TopicName
-  , _optionsConsumerGroupId :: ConsumerGroupId
-  , _optionsKafkaConfig     :: KafkaConfig
-  , _optionsStatsConfig     :: StatsConfig
+data CmdServiceOptions = CmdServiceOptions
+  { _cmdServiceOptionsLogLevel        :: LogLevel
+  , _cmdServiceOptionsRegion          :: Region
+  , _cmdServiceOptionsInputTopic      :: TopicName
+  , _cmdServiceOptionsConsumerGroupId :: ConsumerGroupId
+  , _cmdServiceOptionsKafkaConfig     :: KafkaConfig
+  , _cmdServiceOptionsStatsConfig     :: StatsConfig
   } deriving (Show)

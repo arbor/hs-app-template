@@ -12,15 +12,15 @@ import Network.StatsD    (StatsClient)
 
 makeClassy ''AppEnv
 makeClassy ''AppLogger
+makeClassy ''CmdServiceOptions
 makeClassy ''KafkaConfig
-makeClassy ''Options
 makeClassy ''StatsConfig
 
-instance HasKafkaConfig Options where
-  kafkaConfig = optionsKafkaConfig
+instance HasKafkaConfig CmdServiceOptions where
+  kafkaConfig = cmdServiceOptionsKafkaConfig
 
-instance HasStatsConfig Options where
-  statsConfig = optionsStatsConfig
+instance HasStatsConfig CmdServiceOptions where
+  statsConfig = cmdServiceOptionsStatsConfig
 
 instance HasEnv (AppEnv o) where
   environment = appEnv . appEnvAwsEnv
