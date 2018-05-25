@@ -2,7 +2,8 @@ module App.Service
   ( handleStream
   ) where
 
-import App
+import App.AppError
+import App.Application
 import Conduit
 import Data.ByteString      (ByteString)
 import Data.ByteString.Lazy (fromStrict)

@@ -10,7 +10,7 @@ export GATEWAY_IP=$(ip route | grep default | cut -d ' ' -f 3)
 export STATSD_HOST=${STATSD_HOST:-$GATEWAY_IP}
 
 set -x
-hs-app-template \
+hs-app-template service \
   ${AWS_REGION+                       --region                            "${AWS_REGION}"                       } \
   ${KAFKA_BROKER+                     --kafka-broker                      "${KAFKA_BROKER}"                     } \
   ${KAFKA_GROUP_ID+                   --kafka-group-id                    "${KAFKA_GROUP_ID}"                   } \

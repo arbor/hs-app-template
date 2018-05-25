@@ -71,13 +71,15 @@ library:
   - -Wincomplete-uni-patterns
   - -Wredundant-constraints
   exposed-modules:
-  - App
   - App.AWS.Env
   - App.AWS.S3
   - App.AppEnv
   - App.AppError
   - App.AppState
   - App.Application
+  - App.Commands
+  - App.Commands.Service
+  - App.Commands.Types
   - App.Has
   - App.Kafka
   - App.Lens
