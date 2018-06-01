@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: ~/project
     docker:
-      - image: quay.io/haskell_works/stack-build-python
+      - image: quay.io/haskell_works/stack-build-python:16.04
 
     steps:
       - checkout
