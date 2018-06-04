@@ -3,12 +3,24 @@ jobs:
   build:
     working_directory: ~/project
     docker:
-      - image: quay.io/haskell_works/stack-build-python:16.04
+      - image: quay.io/haskell_works/stack-build-minimal:18.04
 
     steps:
       - checkout
+
       - run: git fetch --unshallow || true
-      - run: grep '^resolver:' stack.yaml > resolver.txt
+
+      - run:
+          name: Copying scripts
+          command: |
+            mkdir -p ~/.local/bin
+            cp ./scripts/* ~/.local/bin
+
+      - run:
+          name: Query resolver & ghc version
+          command: |
+            resolver > resolver.version
+            ghc-version $(cat resolver.version) >  ghc.version
 
       - restore_cache:
           key: cache--librdkafka-{{ checksum "scripts/build-librdkafka.sh" }}
@@ -21,36 +33,37 @@ jobs:
 
       - restore_cache:
           keys:
-            - cache--dot-stack-{{ checksum "stack.yaml" }}-{{ checksum "package.yaml" }}
-            - cache--dot-stack-{{ checksum "stack.yaml" }}
-            - cache--dot-stack-{{ checksum "resolver.txt" }}
-            - cache--dot-stack-resolver-{{ checksum "resolver.txt" }}
-      - run: stack setup
-      - save_cache:
-          key: cache--dot-stack-resolver-{{ checksum "resolver.txt" }}
-          paths:
-            - ~/.stack
-      - save_cache:
-          key: cache--dot-stack-{{ checksum "stack.yaml" }}
-          paths:
-            - ~/.stack
+                - stack--{{ checksum "ghc.version" }}--{{ .Environment.CACHE_VERSION }}--{{ checksum "resolver.version" }}--{{ checksum "package.yaml" }}--{{ checksum "stack.yaml" }}
+                - stack--{{ checksum "ghc.version" }}--{{ .Environment.CACHE_VERSION }}--{{ checksum "resolver.version" }}--{{ checksum "package.yaml" }}
+                - stack--{{ checksum "ghc.version" }}--{{ .Environment.CACHE_VERSION }}--{{ checksum "resolver.version" }}
+                - stack--{{ checksum "ghc.version" }}--only
 
-      - restore_cache:
-          key: cache--stack-work-{{ checksum "stack.yaml" }}
-      - run: stack build --test --no-run-tests --dependencies-only
+      - run: stack setup
+
       - save_cache:
-          key: cache--dot-stack-{{ checksum "resolver.txt" }}
-          paths:
-            - ~/.stack
+          key:    stack--{{ checksum "ghc.version" }}--only
+          paths:  [~/.stack, ~/project/.stack-work]
+
+      - run: |
+          stack build bytestring
+          stack build text
+          stack build clock
+          stack build mtl
+          stack build network
+          stack build parallel
+          stack build Cabal
+          stack build HUnit
+          stack build --test --no-run-tests --dependencies-only
+
+      - save_cache:
+          key:    stack--{{ checksum "ghc.version" }}--{{ .Environment.CACHE_VERSION }}--{{ checksum "resolver.version" }}--{{ checksum "package.yaml" }}
+          paths:  [~/.stack, ~/project/.stack-work]
 
       - run: stack build --test --no-run-tests
+
       - save_cache:
-          key: cache--dot-stack-{{ checksum "stack.yaml" }}-{{ checksum "package.yaml" }}
-          paths:
-            - ~/.stack
-      - save_cache:
-          key: cache--stack-work-{{ checksum "stack.yaml" }}
-          paths: ~/project/.stack-work
+          key:    stack--{{ checksum "ghc.version" }}--{{ .Environment.CACHE_VERSION }}--{{ checksum "resolver.version" }}--{{ checksum "package.yaml" }}--{{ checksum "stack.yaml" }}
+          paths:  [~/.stack, ~/project/.stack-work]
 
       - setup_remote_docker:
           docker_layer_caching: true
