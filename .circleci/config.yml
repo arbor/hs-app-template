@@ -35,7 +35,7 @@ jobs:
           keys:
                 - stack--{{ checksum "ghc.version" }}--{{ .Environment.CACHE_VERSION }}--{{ checksum "resolver.version" }}--{{ checksum "package.yaml" }}--{{ checksum "stack.yaml" }}
                 - stack--{{ checksum "ghc.version" }}--{{ .Environment.CACHE_VERSION }}--{{ checksum "resolver.version" }}--{{ checksum "package.yaml" }}
-                - stack--{{ checksum "ghc.version" }}--{{ .Environment.CACHE_VERSION }}--{{ checksum "resolver.version" }}
+                - stack--{{ checksum "ghc.version" }}--{{ .Environment.CACHE_VERSION }}--{{ checksum "resolver.version" }}--
                 - stack--{{ checksum "ghc.version" }}--only
 
       - run: stack setup
