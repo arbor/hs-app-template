@@ -34,28 +34,16 @@ dependencies:
 - amazonka
 - amazonka-core
 - amazonka-s3
-- avro
-- bifunctors
 - bytestring
 - conduit
 - conduit-combinators
 - containers
-- datadog
-- directory
 - exceptions
-- fast-logger
-- hs-arbor-logger
 - http-client
+- hs-arbor-logger
 - hw-conduit
-- hw-kafka-avro
-- hw-kafka-client
-- hw-kafka-conduit
 - lens
-- monad-control
-- monad-logger
 - mtl
-- network
-- random
 - resourcet
 - text
 - transformers
@@ -73,20 +61,6 @@ library:
   exposed-modules:
   - App.AWS.Env
   - App.AWS.S3
-  - App.AppEnv
-  - App.AppError
-  - App.AppState
-  - App.Application
-  - App.Commands
-  - App.Commands.Service
-  - App.Commands.Types
-  - App.Has
-  - App.Kafka
-  - App.Lens
-  - App.Options
-  - App.Options.Types
-  - App.Orphans
-  - App.Service
   dependencies:
   - conduit-extra
   - http-types
@@ -135,6 +109,8 @@ tests:
     - hs-app-template
     - hspec
     - hedgehog
+    - hw-hedgehog
+    - hw-hspec-hedgehog
     when:
     - condition: os(osx)
       cpp-options:
