@@ -23,7 +23,6 @@ packages:
     commit: 0344f9321a9065c0fb1aafed86538954f7d20838
     subdirs:
       - amazonka
-      - amazonka-core
       - amazonka-s3
   extra-dep: true
 
