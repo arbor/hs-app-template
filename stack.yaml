@@ -10,21 +10,18 @@ packages:
     git: git@github.com:packetloop/hs-arbor-logger.git
     commit: 85f56acbd43625793b09aa5281c6224a7cca7d76
   extra-dep: true
-- location:
-    git: git@github.com:haskell-works/hw-hedgehog.git
-    commit: 0fd750bbbf733045027e1bc4a61f2b0df63591c7
-  extra-dep: true
 
 # Dependency packages to be pulled from upstream that are not in the resolver
 # (e.g., acme-missiles-0.3)
 extra-deps:
   - avro-0.2.0.0
   - pure-zlib-0.6
-  - hedgehog-0.5
+  - hedgehog-0.5.3
   - hw-kafka-avro-1.3.0
   - hw-kafka-client-2.3.1
   - hw-kafka-conduit-2.0.0
-  - hw-hspec-hedgehog-0.1.0.0
+  - hw-hedgehog-0.1.0.1
+  - hw-hspec-hedgehog-0.1.0.1
   - hw-conduit-0.2.0.3
 
 # Override default flag values for local packages and extra-deps
