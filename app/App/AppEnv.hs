@@ -1,21 +1,41 @@
+{-# LANGUAGE DataKinds              #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE MultiParamTypeClasses  #-}
 {-# LANGUAGE TemplateHaskell        #-}
+{-# LANGUAGE DuplicateRecordFields        #-}
+{-# LANGUAGE TypeApplications       #-}
 
 module App.AppEnv where
 
-import Arbor.Logger   (LogLevel, TimedFastLogger)
-import Network.AWS    (Env)
-import Network.StatsD (StatsClient)
+import Arbor.Logger                 (LogLevel, TimedFastLogger)
+import Data.Generics.Product.Fields
+import Data.Generics.Product.Typed
+import GHC.Generics
+import App.Options.Types
+import Network.AWS                  (Env)
+import Network.StatsD               (StatsClient)
 
 data AppLogger = AppLogger
-  { _appLoggerLogger   :: TimedFastLogger
-  , _appLoggerLogLevel :: LogLevel
-  }
+  { logger   :: TimedFastLogger
+  , logLevel :: LogLevel
+  } deriving Generic
 
 data AppEnv o = AppEnv
-  { _appEnvOptions     :: o
-  , _appEnvAwsEnv      :: Env
-  , _appEnvStatsClient :: StatsClient
-  , _appEnvLogger      :: AppLogger
-  }
+  { options     :: o
+  , awsEnv      :: Env
+  , statsClient :: StatsClient
+  , logger      :: AppLogger
+  } deriving Generic
+
+instance {-# OVERLAPPING #-} HasType KafkaConfig a => HasType KafkaConfig (AppEnv a) where
+  typed = field @"options" . typed
+
+instance {-# OVERLAPPING #-} HasType AppLogger (AppEnv a) where
+  typed = field @"logger"
+
+instance {-# OVERLAPPING #-} HasType StatsClient (AppEnv a) where
+  typed = field @"statsClient"
+
+instance {-# OVERLAPPING #-} HasType Env (AppEnv a) where
+  typed = field @"awsEnv"
+  

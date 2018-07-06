@@ -1,7 +1,9 @@
+{-# LANGUAGE DataKinds                  #-}
 {-# LANGUAGE FlexibleContexts           #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
 {-# LANGUAGE StandaloneDeriving         #-}
+{-# LANGUAGE TypeApplications           #-}
 
 module App.Application where
 
@@ -18,11 +20,10 @@ import Control.Monad.Logger         (LoggingT, MonadLogger)
 import Control.Monad.Reader
 import Control.Monad.State.Strict   (MonadState (..), StateT, execStateT)
 import Control.Monad.Trans.Resource
+import Data.Generics.Product.Fields
 import Data.Text                    (Text)
 import Network.AWS                  as AWS hiding (LogLevel)
 import Network.StatsD               as S
-
-import qualified App.Lens as L
 
 type AppName = Text
 
@@ -62,7 +63,7 @@ deriving instance MonadAppError (Application o)
 deriving instance (MonadApp o) (Application o)
 
 instance MonadStats (Application o ) where
-  getStatsClient = reader _appEnvStatsClient
+  getStatsClient = reader (^. field @"statsClient")
 
 runApplicationM :: Show o
   => AppEnv o
@@ -70,10 +71,10 @@ runApplicationM :: Show o
   -> IO (Either AppError AppState)
 runApplicationM envApp f =
   runResourceT
-    . runAWS (envApp ^. L.awsEnv)
-    . runTimedLogT (envApp ^. L.logger . L.logLevel) (envApp ^. L.logger . L.logger)
+    . runAWS (envApp ^. field @"awsEnv")
+    . runTimedLogT (envApp ^. field @"logger" . field @"logLevel") (envApp ^. field @"logger" . field @"logger")
     . runExceptT
     . flip execStateT appStateEmpty
     $ do
-        logInfo $ show (envApp ^. L.options)
+        logInfo $ show (envApp ^. field @"options")
         runReaderT (unApp f) envApp

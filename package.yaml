@@ -44,6 +44,7 @@ dependencies:
 - directory
 - exceptions
 - fast-logger
+- generic-lens
 - hs-arbor-logger
 - http-client
 - hw-conduit

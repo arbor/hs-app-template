@@ -1,18 +1,21 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE DataKinds        #-}
+{-# LANGUAGE TemplateHaskell  #-}
+{-# LANGUAGE TypeApplications #-}
+
 module App.Options where
 
 import App.Commands.Types
 import App.Options.Types
 import Control.Lens
-import Control.Monad.Logger  (LogLevel (..))
-import Data.Semigroup        ((<>))
+import Control.Monad.Logger         (LogLevel (..))
+import Data.Generics.Product.Fields
+import Data.Semigroup               ((<>))
 import Kafka.Types
-import Network.AWS.Data.Text (FromText (..), fromText)
-import Network.StatsD        (SampleRate (..))
+import Network.AWS.Data.Text        (FromText (..), fromText)
+import Network.StatsD               (SampleRate (..))
 import Options.Applicative
-import Text.Read             (readEither)
+import Text.Read                    (readEither)
 
-import qualified App.Lens    as L
 import qualified Data.Text   as T
 import qualified Network.AWS as AWS
 
@@ -75,7 +78,7 @@ kafkaConfigParser = KafkaConfig
     )
 
 awsLogLevel :: CmdServiceOptions -> AWS.LogLevel
-awsLogLevel o = case o ^. L.logLevel of
+awsLogLevel o = case o ^. field @"logLevel" of
   LevelError -> AWS.Error
   LevelWarn  -> AWS.Error
   LevelInfo  -> AWS.Error

@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module App.LibSpec
+module Arbor.LibSpec
   ( spec
   ) where
 

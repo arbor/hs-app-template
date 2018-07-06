@@ -1,4 +1,6 @@
+{-# LANGUAGE DataKinds        #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE TypeApplications #-}
 
 module App.Commands.Service where
 
@@ -11,10 +13,13 @@ import App.Commands.Types
 import App.Conduit
 import App.Kafka
 import App.Options
+import App.Options.Types
 import App.Stats
 import Arbor.Logger
 import Control.Lens
 import Data.Conduit
+import Data.Generics.Product.Fields
+import Data.Generics.Product.Typed
 import Data.Semigroup                       ((<>))
 import HaskellWorks.Data.Conduit.Combinator
 import Kafka.Avro                           (schemaRegistry)
@@ -24,8 +29,6 @@ import Network.AWS.Types
 import Options.Applicative
 import System.Environment
 
-import qualified App.Has     as H
-import qualified App.Lens    as L
 import qualified App.Service as Srv
 import qualified Data.Text   as T
 
@@ -35,12 +38,12 @@ cmdService = command "service" $ flip info idm $ runService <$> optsService
 runService :: CmdServiceOptions -> IO ()
 runService opt = do
   progName <- T.pack <$> getProgName
-  let logLvk    = opt ^. L.logLevel
-  let statsConf = opt ^. L.statsConfig
+  let logLvk    = opt ^. field @"logLevel"
+  let statsConf = opt ^. field @"statsConfig"
 
   withStdOutTimedFastLogger $ \lgr -> do
     withStatsClient progName statsConf $ \stats -> do
-      envAws <- mkEnv (opt ^. L.region) logLvk lgr
+      envAws <- mkEnv (opt ^. field @"region") logLvk lgr
       let envApp = AppEnv opt envAws stats (AppLogger lgr logLvk)
       res <- runApplication envApp
       case res of
@@ -49,31 +52,32 @@ runService opt = do
     pushLogMessage lgr LevelError ("Premature exit, must not happen." :: String)
 
 runApplication ::
-  ( H.HasKafkaConfig o
-  , L.HasConsumerGroupId o ConsumerGroupId
-  , L.HasInputTopic o TopicName
+  ( HasType KafkaConfig o
+  , HasField' "consumerGroupId" o ConsumerGroupId
+  , HasField' "inputTopic" o TopicName
   , Show o)
   => AppEnv o
   -> IO (Either AppError AppState)
 runApplication envApp =
   runApplicationM envApp $ do
-    opt <- view H.appEnvOptions
-    kafkaConf <- view H.kafkaConfig
+    opt <- view (field @"options")
+    kafkaConf <- view (typed @KafkaConfig)
+    -- _ <- view (typed @AppLogger)
 
     logInfo "Creating Kafka Consumer"
-    consumer <- mkConsumer (opt ^. L.consumerGroupId) (opt ^. L.inputTopic)
+    consumer <- mkConsumer (opt ^. field @"consumerGroupId") (opt ^. field @"inputTopic")
     -- producer <- mkProducer -- Use this if you also want a producer.
 
     logInfo "Instantiating Schema Registry"
-    sr <- schemaRegistry (kafkaConf ^. L.schemaRegistryAddress)
+    sr <- schemaRegistry (kafkaConf ^. field @"schemaRegistryAddress")
 
     logInfo "Running Kafka Consumer"
     runConduit $
-      kafkaSourceNoClose consumer (kafkaConf ^. L.pollTimeoutMs)
+      kafkaSourceNoClose consumer (kafkaConf ^. field @"pollTimeoutMs")
       .| throwLeftSatisfyC KafkaErr isFatal                       -- throw any fatal error
       .| skipNonFatalExcept [isPollTimeout]                       -- discard any non-fatal except poll timeouts
       .| rightC (Srv.handleStream sr)                             -- handle messages (see Service.hs)
-      .| everyNSeconds (kafkaConf ^. L.commitPeriodSec)  -- only commit ever N seconds, so we don't hammer Kafka.
+      .| everyNSeconds (kafkaConf ^. field @"commitPeriodSec")  -- only commit ever N seconds, so we don't hammer Kafka.
       .| commitOffsetsSink consumer
       -- .| flushThenCommitSink consumer producer -- Swap with the above if you want a producer.
 
