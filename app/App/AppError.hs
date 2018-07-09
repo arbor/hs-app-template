@@ -6,13 +6,14 @@ module App.AppError
 
 import Control.Monad.Catch
 import Control.Monad.Except
+import GHC.Generics
 import Kafka.Avro
 import Kafka.Types
 
 data AppError = KafkaErr KafkaError
               | DecodeErr DecodeError
               | AppErr String
-              deriving (Show, Eq)
+              deriving (Show, Eq, Generic)
 instance Exception AppError
 
 throwErrorAs :: MonadError e' m => (e -> e') -> Either e a -> m a

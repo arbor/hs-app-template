@@ -1,6 +1,8 @@
 module App.AppState where
 
-data AppState = AppState {} deriving Show
+import GHC.Generics
+
+data AppState = AppState {} deriving (Show, Generic)
 
 appStateEmpty :: AppState
 appStateEmpty = AppState {}

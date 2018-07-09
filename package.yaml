@@ -44,6 +44,7 @@ dependencies:
 - directory
 - exceptions
 - fast-logger
+- generic-lens
 - hs-arbor-logger
 - http-client
 - hw-conduit
@@ -70,28 +71,6 @@ library:
   - -Wincomplete-record-updates
   - -Wincomplete-uni-patterns
   - -Wredundant-constraints
-  exposed-modules:
-  - App.AWS.Env
-  - App.AWS.S3
-  - App.AppEnv
-  - App.AppError
-  - App.AppState
-  - App.Application
-  - App.Commands
-  - App.Commands.Service
-  - App.Commands.Types
-  - App.Has
-  - App.Kafka
-  - App.Lens
-  - App.Options
-  - App.Options.Types
-  - App.Orphans
-  - App.Service
-  dependencies:
-  - conduit-extra
-  - http-types
-  - optparse-applicative
-  - split
   when:
   - condition: os(osx)
     cpp-options:
@@ -112,8 +91,11 @@ executables:
     - -Wincomplete-uni-patterns
     - -Wredundant-constraints
     dependencies:
+    - conduit-extra
     - hs-app-template
+    - http-types
     - optparse-applicative
+    - split
     when:
     - condition: os(osx)
       cpp-options:
