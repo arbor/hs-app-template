@@ -1,10 +1,10 @@
-FROM ubuntu:17.10
+FROM ubuntu:18.04
 LABEL maintainer="Tyler Durden <mayhem@arbor.net>"
 
 ADD docker/set-environment.sh /usr/local/bin/set-environment
 
 RUN apt-get update && \
-    apt-get install -y jq libgmp10 libssl1.0.0 iproute netbase ca-certificates && \
+    apt-get install -y jq libgmp10 libssl1.0.0 iproute2 netbase ca-certificates && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 COPY .librdkafka/ /usr/
