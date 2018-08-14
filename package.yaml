@@ -39,6 +39,7 @@ dependencies:
 - bytestring
 - conduit
 - conduit-combinators
+- conduit-extra
 - containers
 - datadog
 - directory
@@ -47,6 +48,7 @@ dependencies:
 - generic-lens
 - hs-arbor-logger
 - http-client
+- http-types
 - hw-conduit
 - hw-kafka-avro
 - hw-kafka-client
@@ -56,8 +58,10 @@ dependencies:
 - monad-logger
 - mtl
 - network
+- optparse-applicative
 - random
 - resourcet
+- split
 - text
 - transformers
 - transformers-base
@@ -91,11 +95,7 @@ executables:
     - -Wincomplete-uni-patterns
     - -Wredundant-constraints
     dependencies:
-    - conduit-extra
-    - hs-app-template
-    - http-types
-    - optparse-applicative
-    - split
+      - hs-app-template
     when:
     - condition: os(osx)
       cpp-options:
