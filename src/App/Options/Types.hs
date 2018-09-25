@@ -6,7 +6,8 @@ import Data.Text      (Text)
 import GHC.Generics
 import Kafka.Types
 import Network.Socket (HostName)
-import Network.StatsD (SampleRate (..))
+
+import qualified Arbor.Network.StatsD.Type as Z
 
 newtype StatsTag = StatsTag (Text, Text) deriving (Show, Eq)
 
@@ -23,5 +24,5 @@ data StatsConfig = StatsConfig
   { host       :: HostName
   , port       :: Int
   , tags       :: [StatsTag]
-  , sampleRate :: SampleRate
+  , sampleRate :: Z.SampleRate
   } deriving (Show, Generic)

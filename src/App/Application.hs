@@ -12,6 +12,7 @@ import App.AppError
 import App.AppState
 import App.Orphans                  ()
 import Arbor.Logger
+import Arbor.Network.StatsD         (MonadStats)
 import Control.Lens
 import Control.Monad.Base
 import Control.Monad.Catch
@@ -23,7 +24,8 @@ import Control.Monad.Trans.Resource
 import Data.Generics.Product.Fields
 import Data.Text                    (Text)
 import Network.AWS                  as AWS hiding (LogLevel)
-import Network.StatsD               as S
+
+import qualified Arbor.Network.StatsD as S
 
 type AppName = Text
 

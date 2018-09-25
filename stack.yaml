@@ -3,8 +3,8 @@ resolver: lts-10.10
 packages:
 - '.'
 - location:
-    git: git@github.com:packetloop/datadog.git
-    commit: d7c5b246e02677596ca03bf699c490d0c4470066
+    git: git@github.com:packetloop/arbor-datadog.git
+    commit: 317f6d2a8b29fc807c98e69d9fabc428b635e5f1
   extra-dep: true
 - location:
     git: git@github.com:packetloop/hs-arbor-logger.git
