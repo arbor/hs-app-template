@@ -13,7 +13,8 @@ import Data.Generics.Product.Typed
 import GHC.Generics
 import App.Options.Types
 import Network.AWS                  (Env)
-import Network.StatsD               (StatsClient)
+
+import qualified Arbor.Network.StatsD.Type as Z
 
 data AppLogger = AppLogger
   { logger   :: TimedFastLogger
@@ -23,7 +24,7 @@ data AppLogger = AppLogger
 data AppEnv o = AppEnv
   { options     :: o
   , awsEnv      :: Env
-  , statsClient :: StatsClient
+  , statsClient :: Z.StatsClient
   , logger      :: AppLogger
   } deriving Generic
 
@@ -33,7 +34,7 @@ instance {-# OVERLAPPING #-} HasType KafkaConfig a => HasType KafkaConfig (AppEn
 instance {-# OVERLAPPING #-} HasType AppLogger (AppEnv a) where
   typed = field @"logger"
 
-instance {-# OVERLAPPING #-} HasType StatsClient (AppEnv a) where
+instance {-# OVERLAPPING #-} HasType Z.StatsClient (AppEnv a) where
   typed = field @"statsClient"
 
 instance {-# OVERLAPPING #-} HasType Env (AppEnv a) where

@@ -8,14 +8,16 @@ import App.AWS.Env
 import App.Commands.Types
 import App.Orphans                  ()
 import Arbor.Logger
+import Arbor.Network.StatsD         (MonadStats (..))
 import Control.Monad.Base
 import Control.Monad.Catch
 import Control.Monad.IO.Class
 import Control.Monad.Logger         (LoggingT, MonadLogger)
 import Control.Monad.Trans.Resource
 import Network.AWS                  as AWS hiding (LogLevel)
-import Network.StatsD               as S
 import Options.Applicative
+
+import qualified Arbor.Network.StatsD.Type as Z
 
 cmdDevRun :: Mod CommandFields (IO ())
 cmdDevRun = command "dev-run" $ flip info idm $ runDevRun <$> optsDevRun
@@ -26,14 +28,12 @@ newtype DevApp a = DevApp
              , MonadMask, MonadAWS, MonadLogger, MonadResource)
 
 instance MonadStats DevApp where
-  getStatsClient = pure Dummy
+  getStatsClient = pure Z.Dummy
 
 runDevRun :: CmdDevRunOptions -> IO ()
-runDevRun _ = do
-  withStdOutTimedFastLogger $ \logger -> do
-    env <- mkEnv Oregon LevelInfo logger
-    runDevRun' env logger $ do
-      return ()
+runDevRun _ = withStdOutTimedFastLogger $ \logger -> do
+  env <- mkEnv Oregon LevelInfo logger
+  runDevRun' env logger $ return ()
 
 runDevRun' :: HasEnv e => e -> TimedFastLogger -> DevApp a -> IO a
 runDevRun' e logger f = runResourceT . runAWS e $ runTimedLogT LevelInfo logger (unDevApp f)
